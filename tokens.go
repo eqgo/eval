@@ -1,7 +1,8 @@
 package eval
 
 import (
-	"strconv"
+	"fmt"
+	"strings"
 )
 
 // Token is a token in an expression
@@ -11,43 +12,37 @@ type Token struct {
 }
 
 // Tokens returns the tokens for the given expression string
-func Tokens(expr string) ([]Token, error) {
-	res := []Token{}
-	data := append([]rune(expr), '?')
-	for pos := 0; pos < len(data); pos++ {
-		r := data[pos]
-		switch {
-		case IsLeft(r):
-			res = append(res, Token{LEFT, nil})
-		case IsRight(r):
-			res = append(res, Token{RIGHT, nil})
-		case r == '+':
-			res = append(res, Token{ADD, nil})
-		case r == '-':
-			res = append(res, Token{SUB, nil})
-		case r == '*':
-			res = append(res, Token{MUL, nil})
-		case r == '/':
-			res = append(res, Token{DIV, nil})
-		case r == '%':
-			res = append(res, Token{MOD, nil})
-		case IsNumeric(r):
-			str := []rune{}
-			for i := pos; i < len(data); i++ {
+func Tokens(expr string, ctx *Context) ([]Token, error) {
+	l := newLexer(append([]rune(expr), '?'), ctx)
+	err := l.lex()
+	if err != nil {
+		return nil, err
+	}
+	return l.res, nil
+}
 
-				if !IsNumeric(data[i]) {
-					f, err := strconv.ParseFloat(string(str), 64)
-					if err != nil {
-						return nil, err
-					}
-					res = append(res, Token{NUM, f})
-					pos = i - 1
-					break
-				}
-				str = append(str, data[i])
-			}
+func (t Token) String() string {
+	return fmt.Sprintf("(%v: %v)", t.Type, t.Value)
+}
 
+// stringToken makes tokens from the given string and context
+func stringToken(r []rune, ctx *Context) []Token {
+	s := string(r)
+	if strings.ToLower(s) == "true" {
+		return []Token{{BOOL, true}}
+	}
+	if strings.ToLower(s) == "false" {
+		return []Token{{BOOL, false}}
+	}
+	for n := range ctx.Funcs {
+		if n == s {
+			return []Token{{FUNC, n}}
 		}
 	}
-	return res, nil
+	for n := range ctx.Vars {
+		if n == s {
+			return []Token{{VAR, n}}
+		}
+	}
+	return []Token{{VAR, s}}
 }

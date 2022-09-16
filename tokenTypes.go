@@ -3,29 +3,63 @@ package eval
 // TokenType represents the type of an expression token
 type TokenType int
 
+// TokenType Constants
 const (
-	// VAR is a token that represents a variable. Its value will be the name of the variable.
+	// Value is type Var
 	VAR TokenType = iota
-	// FUNC is a token that represents a function. Its value will be the name of the function.
+	// Value is type Func
 	FUNC
-	// NUM is a token that represents a number. Its value will be the number in float64 format.
+	// float64
 	NUM
-	// BOOL is a token that represents a bool literal. Its value will be the value of the bool.
+	// literal
 	BOOL
-	// LEFT is a token that represents a ([{ symbol. It has no value.
+	// ({[
 	LEFT
-	// RIGHT is a token that represents a )]} symbol. It has no value.
+	// )}]
 	RIGHT
-	// ADD is a token that represents a + symbol. It has no value.
-	ADD
-	// SUB is a token that represents a - symbol. It has no value.
+	// Value is type NumOp
+	NUMOP
+	// Value is type Comp
+	COMP
+	// Value is type LogOp
+	LOGOP
+)
+
+// NumOp represents the value of a NUMOP token
+type NumOp int
+
+// NumOp Constants
+const (
+	// +
+	ADD NumOp = iota
+	// -
 	SUB
-	// MUL is a token that represents a * symbol. It has no value.
+	// *
 	MUL
-	// DIV is a token that represents a / symbol. It has no value.
+	// /
 	DIV
-	// MOD is a token that represents a % symbol. It has no value.
+	// %
 	MOD
+)
+
+// Comp represents the value of a COMP token
+type Comp int
+
+// Comp Constants
+const (
+	// =
+	EQUAL Comp = iota
+	// !=
+	NOTEQUAL
+)
+
+// LogOp represents the value of a LOGOP token
+type LogOp int
+
+// LogOp Constants
+const (
+	// !
+	NOT LogOp = iota
 )
 
 func (t TokenType) String() string {
@@ -42,6 +76,18 @@ func (t TokenType) String() string {
 		return "LEFT"
 	case RIGHT:
 		return "RIGHT"
+	case NUMOP:
+		return "NUMOP"
+	case COMP:
+		return "COMP"
+	case LOGOP:
+		return "LOGOP"
+	}
+	return "UNKNOWN"
+}
+
+func (n NumOp) String() string {
+	switch n {
 	case ADD:
 		return "ADD"
 	case SUB:
@@ -52,6 +98,24 @@ func (t TokenType) String() string {
 		return "DIV"
 	case MOD:
 		return "MOD"
+	}
+	return "UNKNOWN"
+}
+
+func (c Comp) String() string {
+	switch c {
+	case EQUAL:
+		return "EQUAL"
+	case NOTEQUAL:
+		return "NOTEQUAL"
+	}
+	return "UNKNOWN"
+}
+
+func (l LogOp) String() string {
+	switch l {
+	case NOT:
+		return "NOT"
 	}
 	return "UNKNOWN"
 }

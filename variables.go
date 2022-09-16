@@ -7,6 +7,11 @@ type Var any
 // Vars is a group of named variables that can be used in expressions.
 type Vars map[string]Var
 
+// NewVars makes a new empty set of vars
+func NewVars() Vars {
+	return make(Vars)
+}
+
 // Set sets the value of the given name to the given value.
 func (v Vars) Set(name string, value Var) {
 	v[name] = value
