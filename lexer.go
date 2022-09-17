@@ -1,6 +1,10 @@
 package eval
 
-import "strconv"
+import (
+	"errors"
+	"strconv"
+	"strings"
+)
 
 type lexer struct {
 	data []rune
@@ -42,23 +46,29 @@ func (l *lexer) next() error {
 		l.add(Token{NUMOP, MUL})
 	case cur == '/':
 		l.add(Token{NUMOP, DIV})
+	case cur == '^':
+		l.add(Token{NUMOP, POW})
 	case cur == '%':
 		l.add(Token{NUMOP, MOD})
 	case cur == '=':
 		l.add(Token{COMP, EQUAL})
 	case cur == '!':
-		if l.pos+1 < l.len {
-			if l.data[l.pos+1] == '=' {
-				l.add(Token{COMP, NOTEQUAL})
-				l.pos++
-				return nil
-			}
-		}
-		l.add(Token{LOGOP, NOT})
+		l.handleDoubleSingle('=', Token{COMP, NOTEQUAL}, Token{LOGOP, 0})
+	case cur == '>':
+		l.handleDoubleSingle('=', Token{COMP, GEQ}, Token{COMP, GREATER})
+	case cur == '<':
+		l.handleDoubleSingle('=', Token{COMP, LEQ}, Token{COMP, LESS})
+	case cur == '&':
+		l.handleDoubleSingle('&', Token{LOGOP, AND}, Token{LOGOP, AND})
+	case cur == '|':
+		l.handleDoubleSingle('|', Token{LOGOP, OR}, Token{LOGOP, OR})
 	case IsNumeric(cur):
 		err = l.handleNumeric()
 	case IsString(cur):
 		l.handleString()
+	case IsSpace(cur):
+	default:
+		return errors.New("unrecognized symbol: " + string(cur))
 	}
 	return err
 }
@@ -98,4 +108,38 @@ func (l *lexer) handleNumeric() error {
 func (l *lexer) handleString() {
 	str := l.untilFalse(IsString)
 	l.res = append(l.res, stringToken(str, l.ctx)...)
+}
+
+// handleSingleOrDouble handles a situation like the > symbol where the token could either be > or >=.
+func (l *lexer) handleDoubleSingle(next rune, double, single Token) {
+	if l.pos+1 < l.len {
+		if l.data[l.pos+1] == next {
+			l.add(double)
+			l.pos++
+			return
+		}
+	}
+	l.add(single)
+}
+
+// stringToken makes tokens from the given string and context
+func stringToken(r []rune, ctx *Context) []Token {
+	s := string(r)
+	if strings.ToLower(s) == "true" {
+		return []Token{{BOOL, true}}
+	}
+	if strings.ToLower(s) == "false" {
+		return []Token{{BOOL, false}}
+	}
+	for n := range ctx.Funcs {
+		if n == s {
+			return []Token{{FUNC, n}}
+		}
+	}
+	for n := range ctx.Vars {
+		if n == s {
+			return []Token{{VAR, n}}
+		}
+	}
+	return []Token{{VAR, s}}
 }

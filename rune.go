@@ -23,3 +23,8 @@ func IsLeft(r rune) bool {
 func IsRight(r rune) bool {
 	return r == ')' || r == ']' || r == '}'
 }
+
+// IsSpace returns whether the rune is a space
+func IsSpace(r rune) bool {
+	return unicode.IsSpace(r)
+}

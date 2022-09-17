@@ -38,6 +38,8 @@ const (
 	MUL
 	// /
 	DIV
+	// ^
+	POW
 	// %
 	MOD
 )
@@ -51,6 +53,14 @@ const (
 	EQUAL Comp = iota
 	// !=
 	NOTEQUAL
+	// >
+	GREATER
+	// <
+	LESS
+	// >=
+	GEQ
+	// <=
+	LEQ
 )
 
 // LogOp represents the value of a LOGOP token
@@ -58,8 +68,10 @@ type LogOp int
 
 // LogOp Constants
 const (
-	// !
-	NOT LogOp = iota
+	// &
+	AND LogOp = iota
+	// |
+	OR
 )
 
 func (t TokenType) String() string {
@@ -96,6 +108,8 @@ func (n NumOp) String() string {
 		return "MUL"
 	case DIV:
 		return "DIV"
+	case POW:
+		return "POW"
 	case MOD:
 		return "MOD"
 	}
@@ -108,14 +122,24 @@ func (c Comp) String() string {
 		return "EQUAL"
 	case NOTEQUAL:
 		return "NOTEQUAL"
+	case GREATER:
+		return "GREATER"
+	case LESS:
+		return "LESS"
+	case GEQ:
+		return "GEQ"
+	case LEQ:
+		return "LEQ"
 	}
 	return "UNKNOWN"
 }
 
 func (l LogOp) String() string {
 	switch l {
-	case NOT:
-		return "NOT"
+	case AND:
+		return "AND"
+	case OR:
+		return "OR"
 	}
 	return "UNKNOWN"
 }
