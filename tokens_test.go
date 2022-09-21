@@ -9,7 +9,8 @@ import (
 func TestTokens(t *testing.T) {
 	ctx := NewContext()
 	ctx.Set("x", 0)
+	ctx.Set("y", 0)
 	ctx.Set("sin", NewFunc1(math.Sin))
 	ctx.Set("cos", NewFunc1(math.Cos))
-	fmt.Println(Tokens("4x(sin3)7", ctx))
+	fmt.Println(Tokens("3yx = 42.876yxsinxcosx", ctx))
 }

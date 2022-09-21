@@ -3,7 +3,6 @@ package eval
 import (
 	"errors"
 	"strconv"
-	"strings"
 )
 
 type lexer struct {
@@ -53,7 +52,7 @@ func (l *lexer) next() error {
 	case cur == '=':
 		l.add(Token{COMP, EQUAL})
 	case cur == '!':
-		l.handleDoubleSingle('=', Token{COMP, NOTEQUAL}, Token{LOGOP, nil})
+		l.handleDoubleSingle('=', Token{COMP, NOTEQUAL}, Token{LOGOP, nil}) // TODO: SNUMOP FACT or SLOGOP NOT
 	case cur == '>':
 		l.handleDoubleSingle('=', Token{COMP, GEQ}, Token{COMP, GREATER})
 	case cur == '<':
@@ -125,42 +124,91 @@ func (l *lexer) handleDoubleSingle(next rune, double, single Token) {
 // stringToken makes tokens from the given string and context
 func stringToken(r []rune, ctx *Context) []Token {
 	s := string(r)
-	if strings.ToLower(s) == "true" {
+	// handle bool literals
+	if s == "true" {
 		return []Token{{BOOL, true}}
 	}
-	if strings.ToLower(s) == "false" {
+	if s == "false" {
 		return []Token{{BOOL, false}}
+	}
+	// handle string that is exactly var or func
+	for n := range ctx.Vars {
+		if n == s {
+			return []Token{{VAR, n}}
+		}
 	}
 	for n := range ctx.Funcs {
 		if n == s {
 			return []Token{{FUNC, n}}
 		}
 	}
-	for n := range ctx.Vars {
-		if n == s {
-			return []Token{{VAR, n}}
-		}
+
+	// handle combinations like xsinx
+	slice, ok := stringTokenRecursive(r, ctx)
+	if ok {
+		return slice
 	}
 	return []Token{{VAR, s}}
+}
+
+func stringTokenRecursive(r []rune, ctx *Context) ([]Token, bool) {
+	if len(r) == 0 {
+		return []Token{}, true
+	}
+	for v := range ctx.Vars {
+		for i := 0; i < len(r); i++ {
+			s := string(r[:i+1])
+			if s == v {
+				res, ok := stringTokenRecursive(r[i+1:], ctx)
+				if !ok {
+					return nil, false
+				}
+				return append([]Token{{VAR, v}}, res...), true
+			}
+		}
+	}
+	for f := range ctx.Funcs {
+		for i := 0; i < len(r); i++ {
+			s := string(r[:i+1])
+			if s == f {
+				res, ok := stringTokenRecursive(r[i+1:], ctx)
+				if !ok {
+					return nil, false
+				}
+				return append([]Token{{FUNC, f}}, res...), true
+			}
+		}
+	}
+	return nil, false
 }
 
 // fixTokens replaces things like NUM VAR with NUM MUL VAR
 func (l *lexer) fixTokens() {
 	prev := l.tok[0]
-	for i := 0; i < len(l.tok); i++ {
+	for i := 1; i < len(l.tok); i++ {
 		cur := l.tok[i]
 		switch {
-		case (prev.Type == NUM) && (cur.Type == VAR || cur.Type == FUNC):
+		// ex: 9x or 7sin or xy or xsin
+		case (prev.Type == NUM || prev.Type == VAR) && (cur.Type == VAR || cur.Type == FUNC):
 			l.insert(Token{NUMOP, MUL}, i)
+			i++
+		// )(
 		case (prev.Type == RIGHT) && (cur.Type == LEFT):
 			l.insert(Token{NUMOP, MUL}, i)
+			i++
+		// ex: 3( or x(
 		case (prev.Type == NUM || prev.Type == VAR) && (cur.Type == LEFT):
 			l.insert(Token{NUMOP, MUL}, i)
+			i++
+		// ex: )x or )5 or )sin
 		case (prev.Type == RIGHT) && (cur.Type == VAR || cur.Type == NUM || cur.Type == FUNC):
 			l.insert(Token{NUMOP, MUL}, i)
-		case (prev.Type == FUNC) && (cur.Type == NUM):
+			i++
+		// ex: sin3 or sinx
+		case (prev.Type == FUNC) && (cur.Type == NUM || cur.Type == VAR):
 			l.insert(Token{LEFT, nil}, i)
 			l.insert(Token{RIGHT, nil}, i+2)
+			i++
 		}
 		prev = cur
 	}
