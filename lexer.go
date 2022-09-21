@@ -7,15 +7,15 @@ import (
 )
 
 type lexer struct {
-	data []rune
-	pos  int
-	len  int
-	res  []Token
-	ctx  *Context
+	src []rune
+	pos int
+	len int
+	tok []Token
+	ctx *Context
 }
 
 func newLexer(data []rune, ctx *Context) *lexer {
-	return &lexer{data: data, pos: 0, len: len(data), res: []Token{}, ctx: ctx}
+	return &lexer{src: data, pos: 0, len: len(data), tok: []Token{}, ctx: ctx}
 }
 
 // lex goes through data and sets res to result
@@ -31,7 +31,7 @@ func (l *lexer) lex() error {
 
 // next gets the next token from the data
 func (l *lexer) next() error {
-	cur := l.data[l.pos]
+	cur := l.src[l.pos]
 	var err error
 	switch {
 	case IsLeft(cur):
@@ -53,7 +53,7 @@ func (l *lexer) next() error {
 	case cur == '=':
 		l.add(Token{COMP, EQUAL})
 	case cur == '!':
-		l.handleDoubleSingle('=', Token{COMP, NOTEQUAL}, Token{LOGOP, 0})
+		l.handleDoubleSingle('=', Token{COMP, NOTEQUAL}, Token{LOGOP, nil})
 	case cur == '>':
 		l.handleDoubleSingle('=', Token{COMP, GEQ}, Token{COMP, GREATER})
 	case cur == '<':
@@ -75,7 +75,7 @@ func (l *lexer) next() error {
 
 // add adds the token to the result
 func (l *lexer) add(t Token) {
-	l.res = append(l.res, t)
+	l.tok = append(l.tok, t)
 }
 
 // untilFalse returns the runes until f becomes false
@@ -83,7 +83,7 @@ func (l *lexer) untilFalse(f func(rune) bool) []rune {
 	ret := []rune{}
 	var i int
 	for i = l.pos; i < l.len; i++ {
-		r := l.data[i]
+		r := l.src[i]
 		if !f(r) {
 			break
 		}
@@ -107,13 +107,13 @@ func (l *lexer) handleNumeric() error {
 // handleString handles a situation where the next token is a func/var/bool
 func (l *lexer) handleString() {
 	str := l.untilFalse(IsString)
-	l.res = append(l.res, stringToken(str, l.ctx)...)
+	l.tok = append(l.tok, stringToken(str, l.ctx)...)
 }
 
 // handleSingleOrDouble handles a situation like the > symbol where the token could either be > or >=.
 func (l *lexer) handleDoubleSingle(next rune, double, single Token) {
 	if l.pos+1 < l.len {
-		if l.data[l.pos+1] == next {
+		if l.src[l.pos+1] == next {
 			l.add(double)
 			l.pos++
 			return
@@ -142,4 +142,32 @@ func stringToken(r []rune, ctx *Context) []Token {
 		}
 	}
 	return []Token{{VAR, s}}
+}
+
+// fixTokens replaces things like NUM VAR with NUM MUL VAR
+func (l *lexer) fixTokens() {
+	prev := l.tok[0]
+	for i := 0; i < len(l.tok); i++ {
+		cur := l.tok[i]
+		switch {
+		case (prev.Type == NUM) && (cur.Type == VAR || cur.Type == FUNC):
+			l.insert(Token{NUMOP, MUL}, i)
+		case (prev.Type == RIGHT) && (cur.Type == LEFT):
+			l.insert(Token{NUMOP, MUL}, i)
+		case (prev.Type == NUM || prev.Type == VAR) && (cur.Type == LEFT):
+			l.insert(Token{NUMOP, MUL}, i)
+		case (prev.Type == RIGHT) && (cur.Type == VAR || cur.Type == NUM || cur.Type == FUNC):
+			l.insert(Token{NUMOP, MUL}, i)
+		case (prev.Type == FUNC) && (cur.Type == NUM):
+			l.insert(Token{LEFT, nil}, i)
+			l.insert(Token{RIGHT, nil}, i+2)
+		}
+		prev = cur
+	}
+}
+
+// insert inserts the given token at the given index
+func (l *lexer) insert(t Token, i int) {
+	l.tok = append(l.tok[:i+1], l.tok[i:]...)
+	l.tok[i] = t
 }

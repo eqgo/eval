@@ -17,7 +17,8 @@ func Tokens(expr string, ctx *Context) ([]Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	return l.res, nil
+	l.fixTokens()
+	return l.tok, nil
 }
 
 func (t Token) String() string {
