@@ -51,8 +51,10 @@ func (l *lexer) next() error {
 		l.add(Token{NUMOP, MOD})
 	case cur == '=':
 		l.add(Token{COMP, EQUAL})
+	case cur == ',':
+		l.add(Token{SEP, nil})
 	case cur == '!':
-		l.handleDoubleSingle('=', Token{COMP, NOTEQUAL}, Token{LOGOP, nil}) // TODO: SNUMOP FACT or SLOGOP NOT
+		l.handleDoubleSingle('=', Token{COMP, NOTEQUAL}, Token{SLOGOP, NOT})
 	case cur == '>':
 		l.handleDoubleSingle('=', Token{COMP, GEQ}, Token{COMP, GREATER})
 	case cur == '<':
@@ -205,6 +207,7 @@ func (l *lexer) fixTokens() {
 			l.insert(Token{NUMOP, MUL}, i)
 			i++
 		// ex: sin3 or sinx
+		// TODO: correctly handle things like sin3x
 		case (prev.Type == FUNC) && (cur.Type == NUM || cur.Type == VAR):
 			l.insert(Token{LEFT, nil}, i)
 			l.insert(Token{RIGHT, nil}, i+2)
