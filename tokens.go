@@ -10,7 +10,7 @@ type Token struct {
 	Value any
 }
 
-// Tokens returns the tokens for the given expression string
+// Tokens returns the tokens for the given expression string with the given context
 func Tokens(expr string, ctx *Context) ([]Token, error) {
 	l := newLexer([]rune(expr), ctx)
 	err := l.lex()

@@ -21,12 +21,14 @@ const (
 	SEP
 	// Value is type NumOp
 	NUMOP
+	// Value is type NumPre
+	NUMPRE
 	// Value is type Comp
 	COMP
 	// Value is type LogOp
 	LOGOP
-	// Value is type SLogOp
-	SLOGOP
+	// Value is type LogPre
+	LOGPRE
 )
 
 // NumOp represents the value of a NUMOP token
@@ -46,6 +48,15 @@ const (
 	POW
 	// %
 	MOD
+)
+
+// NumPre represents the value of a NUMPRE token
+type NumPre int
+
+// NumPre Constants
+const (
+	// -
+	NEG NumPre = iota
 )
 
 // Comp represents the value of a COMP token
@@ -78,13 +89,13 @@ const (
 	OR
 )
 
-// SLogOp represents the value of a SLOGOP token
-type SLogOp int
+// LogPre represents the value of a LOGPRE token
+type LogPre int
 
-// SLogOp Constants
+// LOGPRE Constants
 const (
 	// !
-	NOT SLogOp = iota
+	NOT LogPre = iota
 )
 
 func (t TokenType) String() string {
@@ -105,12 +116,14 @@ func (t TokenType) String() string {
 		return "SEP"
 	case NUMOP:
 		return "NUMOP"
+	case NUMPRE:
+		return "NUMPRE"
 	case COMP:
 		return "COMP"
 	case LOGOP:
 		return "LOGOP"
-	case SLOGOP:
-		return "SLOGOP"
+	case LOGPRE:
+		return "LOGPRE"
 	}
 	return "UNKNOWN"
 }
@@ -129,6 +142,14 @@ func (n NumOp) String() string {
 		return "POW"
 	case MOD:
 		return "MOD"
+	}
+	return "UNKNOWN"
+}
+
+func (n NumPre) String() string {
+	switch n {
+	case NEG:
+		return "NEG"
 	}
 	return "UNKNOWN"
 }
@@ -161,8 +182,8 @@ func (l LogOp) String() string {
 	return "UNKNOWN"
 }
 
-func (sl SLogOp) String() string {
-	switch sl {
+func (l LogPre) String() string {
+	switch l {
 	case NOT:
 		return "NOT"
 	}

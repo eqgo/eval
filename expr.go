@@ -4,6 +4,7 @@ package eval
 type Expr struct {
 	Expr   string
 	Tokens []Token
+	Stages *Stage
 }
 
 // NewExpr makes a new expression from the given expression string
@@ -23,5 +24,10 @@ func (ex *Expr) Compile(ctx *Context) error {
 		return err
 	}
 	ex.Tokens = t
+	s, err := Stages(ex.Tokens)
+	if err != nil {
+		return err
+	}
+	ex.Stages = s
 	return nil
 }

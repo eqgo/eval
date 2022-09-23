@@ -13,11 +13,11 @@ type lexer struct {
 	ctx *Context
 }
 
-func newLexer(data []rune, ctx *Context) *lexer {
-	return &lexer{src: data, pos: 0, len: len(data), tok: []Token{}, ctx: ctx}
+func newLexer(src []rune, ctx *Context) *lexer {
+	return &lexer{src: src, pos: 0, len: len(src), tok: []Token{}, ctx: ctx}
 }
 
-// lex goes through data and sets res to result
+// lex goes through data and sets tok to result
 func (l *lexer) lex() error {
 	for l.pos = 0; l.pos < l.len; l.pos++ {
 		err := l.next()
@@ -38,8 +38,15 @@ func (l *lexer) next() error {
 	case IsRight(cur):
 		l.add(Token{RIGHT, nil})
 	case cur == '+':
+		if l.pos == 0 || IsLeft(l.src[l.pos-1]) {
+			break
+		}
 		l.add(Token{NUMOP, ADD})
 	case cur == '-':
+		if l.pos == 0 || IsLeft(l.src[l.pos-1]) {
+			l.add(Token{NUMPRE, NEG})
+			break
+		}
 		l.add(Token{NUMOP, SUB})
 	case cur == '*':
 		l.add(Token{NUMOP, MUL})
@@ -54,7 +61,7 @@ func (l *lexer) next() error {
 	case cur == ',':
 		l.add(Token{SEP, nil})
 	case cur == '!':
-		l.handleDoubleSingle('=', Token{COMP, NOTEQUAL}, Token{SLOGOP, NOT})
+		l.handleDoubleSingle('=', Token{COMP, NOTEQUAL}, Token{LOGPRE, NOT})
 	case cur == '>':
 		l.handleDoubleSingle('=', Token{COMP, GEQ}, Token{COMP, GREATER})
 	case cur == '<':
