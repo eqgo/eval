@@ -31,3 +31,11 @@ func (ex *Expr) Compile(ctx *Context) error {
 	ex.Stages = s
 	return nil
 }
+
+// Eval evaluates the expression with the given context
+func (ex *Expr) Eval(ctx *Context) (any, error) {
+	if ex.Stages == nil {
+		return nil, nil
+	}
+	return ex.Stages.Eval(ctx)
+}
