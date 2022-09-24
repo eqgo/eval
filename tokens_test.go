@@ -8,8 +8,8 @@ import (
 func TestTokens(t *testing.T) {
 	ctx := NewContext()
 	ctx.Copy(MathContext)
-	ctx.Set("x", 2.0)
-	expr := "xsinx"
+	ctx.Set("x", 5.32)
+	expr := "xarccoth78.9"
 	ex := New(expr)
 	ex.Compile(ctx)
 	fmt.Println(ex.Tokens)

@@ -226,6 +226,10 @@ func (l *lexer) fixTokens() {
 
 // insert inserts the given token at the given index
 func (l *lexer) insert(t Token, i int) {
+	if len(l.tok) <= i {
+		l.tok = append(l.tok, t)
+		return
+	}
 	l.tok = append(l.tok[:i+1], l.tok[i:]...)
 	l.tok[i] = t
 }

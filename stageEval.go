@@ -9,6 +9,7 @@ import (
 type stageEval func(left, right any, ctx *Context) (any, error)
 
 var tokenStageEvalMap = map[Token]stageEval{
+	{SEP, nil}:   sepStage,
 	{NUMOP, SUB}: subStage,
 	{NUMOP, ADD}: addStage,
 	{NUMOP, DIV}: divStage,
@@ -79,4 +80,22 @@ func modStage(left, right any, ctx *Context) (any, error) {
 // powStage is the stageEval for a stage that is an pow op
 func powStage(left, right any, ctx *Context) (any, error) {
 	return math.Pow(left.(float64), right.(float64)), nil
+}
+
+// sepStage is the stageEval for a stage that is a sep op
+func sepStage(left, right any, ctx *Context) (any, error) {
+	res := []any{}
+	switch left.(type) {
+	case []any:
+		res = append(res, left.([]any)...)
+	default:
+		res = append(res, left)
+	}
+	switch right.(type) {
+	case []any:
+		res = append(res, right.([]any)...)
+	default:
+		res = append(res, right)
+	}
+	return res, nil
 }

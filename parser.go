@@ -18,7 +18,7 @@ func init() {
 	parseMod = makeOpParseFunc([]Token{{NUMOP, MOD}}, parsePow)
 	parseMul = makeOpParseFunc([]Token{{NUMOP, MUL}, {NUMOP, DIV}}, parseMod)
 	parseAdd = makeOpParseFunc([]Token{{NUMOP, ADD}, {NUMOP, SUB}}, parseMul)
-	parseSep = makeOpParseFunc([]Token{{SEP, nil}}, parseAdd)
+	parseSep = makeOpParseFunc([]Token{{SEP, nil}}, parseVal)
 }
 
 func newParser(src []Token) *parser {
@@ -27,7 +27,7 @@ func newParser(src []Token) *parser {
 
 // parse goes through tokens and sets stg to result
 func (p *parser) parse() error {
-	stg, err := parseSep(p)
+	stg, err := parseAdd(p)
 	if err != nil {
 		return err
 	}
@@ -63,7 +63,7 @@ func makeOpParseFunc(tokens []Token, next parseRule) parseRule {
 func parseFunc(p *parser) (*Stage, error) {
 	fmt.Println(p.src)
 	if p.src[0].Type != FUNC {
-		return parseVal(p)
+		return parseSep(p)
 	}
 	pr := newParser(p.src[p.pos+1:])
 	err := pr.parse()
@@ -77,7 +77,6 @@ func parseFunc(p *parser) (*Stage, error) {
 }
 
 func parseVal(p *parser) (*Stage, error) {
-	fmt.Println(p.src)
 	tok := p.src[0]
 	switch tok.Type {
 	case NUM, BOOL:
@@ -85,8 +84,7 @@ func parseVal(p *parser) (*Stage, error) {
 	case VAR:
 		return &Stage{eval: varStage(tok.Value.(string))}, nil
 	case LEFT:
-		fmt.Println(p.src)
-		pr := newParser(p.src[p.pos+1 : p.len-1])
+		pr := newParser(p.src[p.pos+1:])
 		err := pr.parse()
 		if err != nil {
 			return nil, err
