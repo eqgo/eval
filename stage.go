@@ -1,37 +1,37 @@
 package eval
 
-// A Stage is an evaluation stage
-type Stage struct {
-	Left  *Stage
-	Right *Stage
-	eval  stageEval
+// A stage is an evaluation stage
+type stage struct {
+	Left     *stage
+	Right    *stage
+	evalFunc stageEval
 }
 
-// Stages returns the stages for the given tokens
-func Stages(t []Token) (*Stage, error) {
+// stages returns the stages for the given tokens
+func stages(t []token) (*stage, error) {
 	p := newParser(t)
 	err := p.parse()
 	return p.stg, err
 }
 
-// Eval evaluates the stage
-func (s *Stage) Eval(ctx *Context) (any, error) {
+// eval evaluates the stage
+func (s *stage) eval(ctx *Context) (any, error) {
 	var left, right any
 	var err error
 
 	if s.Left != nil {
-		left, err = s.Left.Eval(ctx)
+		left, err = s.Left.eval(ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	if s.Right != nil {
-		right, err = s.Right.Eval(ctx)
+		right, err = s.Right.eval(ctx)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	return s.eval(left, right, ctx)
+	return s.evalFunc(left, right, ctx)
 }

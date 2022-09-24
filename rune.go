@@ -4,27 +4,27 @@ import (
 	"unicode"
 )
 
-// IsNumeric returns whether the rune is numeric
-func IsNumeric(r rune) bool {
+// isNumeric returns whether the rune is numeric
+func isNumeric(r rune) bool {
 	return ('0' <= r && r <= '9') || r == '.'
 }
 
-// IsString returns whether the rune can be a var, func, or bool literal
-func IsString(r rune) bool {
+// isString returns whether the rune can be a var, func, or bool literal
+func isString(r rune) bool {
 	return unicode.IsLetter(r)
 }
 
-// IsLeft returns whether the rune is a left bracket
-func IsLeft(r rune) bool {
+// isLeft returns whether the rune is a left bracket
+func isLeft(r rune) bool {
 	return r == '(' || r == '[' || r == '{'
 }
 
-// IsRight returns whether the rune is a right bracket
-func IsRight(r rune) bool {
+// isRight returns whether the rune is a right bracket
+func isRight(r rune) bool {
 	return r == ')' || r == ']' || r == '}'
 }
 
-// IsSpace returns whether the rune is a space
-func IsSpace(r rune) bool {
+// isSpace returns whether the rune is a space
+func isSpace(r rune) bool {
 	return unicode.IsSpace(r)
 }

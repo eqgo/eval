@@ -1,25 +1,25 @@
 package eval
 
 type parser struct {
-	src []Token
+	src []token
 	pos int
 	len int
-	stg *Stage
+	stg *stage
 }
 
-type parseRule func(p *parser) (*Stage, error)
+type parseRule func(p *parser) (*stage, error)
 
 var parseSep, parseAdd, parseMul, parseMod, parsePow parseRule
 
 func init() {
-	parsePow = makeOpParseFunc([]Token{{NUMOP, POW}}, parseFunc)
-	parseMod = makeOpParseFunc([]Token{{NUMOP, MOD}}, parsePow)
-	parseMul = makeOpParseFunc([]Token{{NUMOP, MUL}, {NUMOP, DIV}}, parseMod)
-	parseAdd = makeOpParseFunc([]Token{{NUMOP, ADD}, {NUMOP, SUB}}, parseMul)
-	parseSep = makeOpParseFunc([]Token{{SEP, nil}}, parseVal)
+	parsePow = makeOpParseFunc([]token{{NUMOP, POW}}, parseFunc)
+	parseMod = makeOpParseFunc([]token{{NUMOP, MOD}}, parsePow)
+	parseMul = makeOpParseFunc([]token{{NUMOP, MUL}, {NUMOP, DIV}}, parseMod)
+	parseAdd = makeOpParseFunc([]token{{NUMOP, ADD}, {NUMOP, SUB}}, parseMul)
+	parseSep = makeOpParseFunc([]token{{SEP, nil}}, parseVal)
 }
 
-func newParser(src []Token) *parser {
+func newParser(src []token) *parser {
 	return &parser{src: src, pos: 0, len: len(src), stg: nil}
 }
 
@@ -34,8 +34,8 @@ func (p *parser) parse() error {
 }
 
 // makeOpParseFunc makes an a simple parse func for an operator situation
-func makeOpParseFunc(tokens []Token, next parseRule) parseRule {
-	return func(p *parser) (*Stage, error) {
+func makeOpParseFunc(tokens []token, next parseRule) parseRule {
+	return func(p *parser) (*stage, error) {
 		for _, t := range tokens {
 			for p.pos = 0; p.pos < p.len; p.pos++ {
 				cur := p.src[p.pos]
@@ -44,10 +44,10 @@ func makeOpParseFunc(tokens []Token, next parseRule) parseRule {
 					pl.parse()
 					pr := newParser(p.src[p.pos+1:])
 					pr.parse()
-					return &Stage{
-						Left:  pl.stg,
-						Right: pr.stg,
-						eval:  tokenStageEvalMap[t],
+					return &stage{
+						Left:     pl.stg,
+						Right:    pr.stg,
+						evalFunc: tokenStageEvalMap[t],
 					}, nil
 				}
 			}
@@ -58,7 +58,7 @@ func makeOpParseFunc(tokens []Token, next parseRule) parseRule {
 
 }
 
-func parseFunc(p *parser) (*Stage, error) {
+func parseFunc(p *parser) (*stage, error) {
 	// fmt.Println(p.src)
 	if p.src[0].Type != FUNC {
 		return parseSep(p)
@@ -68,19 +68,19 @@ func parseFunc(p *parser) (*Stage, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Stage{
-		Right: pr.stg,
-		eval:  functionStage(p.src[0].Value.(string)),
+	return &stage{
+		Right:    pr.stg,
+		evalFunc: functionStage(p.src[0].Value.(string)),
 	}, nil
 }
 
-func parseVal(p *parser) (*Stage, error) {
+func parseVal(p *parser) (*stage, error) {
 	tok := p.src[0]
 	switch tok.Type {
 	case NUM, BOOL:
-		return &Stage{eval: litStage(tok)}, nil
+		return &stage{evalFunc: litStage(tok)}, nil
 	case VAR:
-		return &Stage{eval: varStage(tok.Value.(string))}, nil
+		return &stage{evalFunc: varStage(tok.Value.(string))}, nil
 	case LEFT:
 		pr := newParser(p.src[p.pos+1:])
 		err := pr.parse()

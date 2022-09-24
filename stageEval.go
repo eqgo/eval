@@ -9,7 +9,7 @@ import (
 // stageEval represents a function that can be used as the eval function for a stage
 type stageEval func(left, right any, ctx *Context) (any, error)
 
-var tokenStageEvalMap = map[Token]stageEval{
+var tokenStageEvalMap = map[token]stageEval{
 	{SEP, nil}:   sepStage,
 	{NUMOP, SUB}: subStage,
 	{NUMOP, ADD}: addStage,
@@ -20,7 +20,7 @@ var tokenStageEvalMap = map[Token]stageEval{
 }
 
 // litStage makes the stageEval for a stage that is a literal value from a token
-func litStage(t Token) stageEval {
+func litStage(t token) stageEval {
 	return func(left, right any, ctx *Context) (any, error) {
 		return t.Value, nil
 	}

@@ -1,12 +1,12 @@
 package eval
 
-// TokenType represents the type of an expression token
-type TokenType int
+// tokenType represents the type of an expression token
+type tokenType int
 
-// TokenType Constants
+// tokenType Constants
 const (
 	// Value is type Var
-	VAR TokenType = iota
+	VAR tokenType = iota
 	// Value is type Func
 	FUNC
 	// float64
@@ -31,13 +31,13 @@ const (
 	LOGPRE
 )
 
-// NumOp represents the value of a NUMOP token
-type NumOp int
+// numOp represents the value of a NUMOP token
+type numOp int
 
-// NumOp Constants
+// numOp Constants
 const (
 	// +
-	ADD NumOp = iota
+	ADD numOp = iota
 	// -
 	SUB
 	// *
@@ -50,22 +50,22 @@ const (
 	MOD
 )
 
-// NumPre represents the value of a NUMPRE token
-type NumPre int
+// numPre represents the value of a NUMPRE token
+type numPre int
 
-// NumPre Constants
+// numPre Constants
 const (
 	// -
-	NEG NumPre = iota
+	NEG numPre = iota
 )
 
-// Comp represents the value of a COMP token
-type Comp int
+// comp represents the value of a COMP token
+type comp int
 
-// Comp Constants
+// comp Constants
 const (
 	// =
-	EQUAL Comp = iota
+	EQUAL comp = iota
 	// !=
 	NOTEQUAL
 	// >
@@ -78,27 +78,27 @@ const (
 	LEQ
 )
 
-// LogOp represents the value of a LOGOP token
-type LogOp int
+// logOp represents the value of a LOGOP token
+type logOp int
 
-// LogOp Constants
+// logOp Constants
 const (
 	// &
-	AND LogOp = iota
+	AND logOp = iota
 	// |
 	OR
 )
 
-// LogPre represents the value of a LOGPRE token
-type LogPre int
+// logPre represents the value of a LOGPRE token
+type logPre int
 
-// LOGPRE Constants
+// logPre Constants
 const (
 	// !
-	NOT LogPre = iota
+	NOT logPre = iota
 )
 
-func (t TokenType) String() string {
+func (t tokenType) String() string {
 	switch t {
 	case VAR:
 		return "VAR"
@@ -128,7 +128,7 @@ func (t TokenType) String() string {
 	return "UNKNOWN"
 }
 
-func (n NumOp) String() string {
+func (n numOp) String() string {
 	switch n {
 	case ADD:
 		return "ADD"
@@ -146,7 +146,7 @@ func (n NumOp) String() string {
 	return "UNKNOWN"
 }
 
-func (n NumPre) String() string {
+func (n numPre) String() string {
 	switch n {
 	case NEG:
 		return "NEG"
@@ -154,7 +154,7 @@ func (n NumPre) String() string {
 	return "UNKNOWN"
 }
 
-func (c Comp) String() string {
+func (c comp) String() string {
 	switch c {
 	case EQUAL:
 		return "EQUAL"
@@ -172,7 +172,7 @@ func (c Comp) String() string {
 	return "UNKNOWN"
 }
 
-func (l LogOp) String() string {
+func (l logOp) String() string {
 	switch l {
 	case AND:
 		return "AND"
@@ -182,7 +182,7 @@ func (l LogOp) String() string {
 	return "UNKNOWN"
 }
 
-func (l LogPre) String() string {
+func (l logPre) String() string {
 	switch l {
 	case NOT:
 		return "NOT"

@@ -12,7 +12,7 @@ func TestTokens(t *testing.T) {
 	expr := "xarccotx+min(x,2)-max(3, x)+sinhpi"
 	ex := New(expr)
 	ex.Compile(ctx)
-	fmt.Println(ex.Tokens)
+	fmt.Println(ex.tokens)
 	fmt.Println(ex.Eval(ctx))
 
 }

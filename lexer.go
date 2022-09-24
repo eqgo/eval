@@ -9,12 +9,12 @@ type lexer struct {
 	src []rune
 	pos int
 	len int
-	tok []Token
+	tok []token
 	ctx *Context
 }
 
 func newLexer(src []rune, ctx *Context) *lexer {
-	return &lexer{src: src, pos: 0, len: len(src), tok: []Token{}, ctx: ctx}
+	return &lexer{src: src, pos: 0, len: len(src), tok: []token{}, ctx: ctx}
 }
 
 // lex goes through data and sets tok to result
@@ -33,48 +33,48 @@ func (l *lexer) next() error {
 	cur := l.src[l.pos]
 	var err error
 	switch {
-	case IsLeft(cur):
-		l.add(Token{LEFT, nil})
-	case IsRight(cur):
-		l.add(Token{RIGHT, nil})
+	case isLeft(cur):
+		l.add(token{LEFT, nil})
+	case isRight(cur):
+		l.add(token{RIGHT, nil})
 	case cur == '+':
-		if l.pos == 0 || IsLeft(l.src[l.pos-1]) {
+		if l.pos == 0 || isLeft(l.src[l.pos-1]) {
 			break
 		}
-		l.add(Token{NUMOP, ADD})
+		l.add(token{NUMOP, ADD})
 	case cur == '-':
-		if l.pos == 0 || IsLeft(l.src[l.pos-1]) {
-			l.add(Token{NUMPRE, NEG})
+		if l.pos == 0 || isLeft(l.src[l.pos-1]) {
+			l.add(token{NUMPRE, NEG})
 			break
 		}
-		l.add(Token{NUMOP, SUB})
+		l.add(token{NUMOP, SUB})
 	case cur == '*':
-		l.add(Token{NUMOP, MUL})
+		l.add(token{NUMOP, MUL})
 	case cur == '/':
-		l.add(Token{NUMOP, DIV})
+		l.add(token{NUMOP, DIV})
 	case cur == '^':
-		l.add(Token{NUMOP, POW})
+		l.add(token{NUMOP, POW})
 	case cur == '%':
-		l.add(Token{NUMOP, MOD})
+		l.add(token{NUMOP, MOD})
 	case cur == '=':
-		l.add(Token{COMP, EQUAL})
+		l.add(token{COMP, EQUAL})
 	case cur == ',':
-		l.add(Token{SEP, nil})
+		l.add(token{SEP, nil})
 	case cur == '!':
-		l.handleDoubleSingle('=', Token{COMP, NOTEQUAL}, Token{LOGPRE, NOT})
+		l.handleDoubleSingle('=', token{COMP, NOTEQUAL}, token{LOGPRE, NOT})
 	case cur == '>':
-		l.handleDoubleSingle('=', Token{COMP, GEQ}, Token{COMP, GREATER})
+		l.handleDoubleSingle('=', token{COMP, GEQ}, token{COMP, GREATER})
 	case cur == '<':
-		l.handleDoubleSingle('=', Token{COMP, LEQ}, Token{COMP, LESS})
+		l.handleDoubleSingle('=', token{COMP, LEQ}, token{COMP, LESS})
 	case cur == '&':
-		l.handleDoubleSingle('&', Token{LOGOP, AND}, Token{LOGOP, AND})
+		l.handleDoubleSingle('&', token{LOGOP, AND}, token{LOGOP, AND})
 	case cur == '|':
-		l.handleDoubleSingle('|', Token{LOGOP, OR}, Token{LOGOP, OR})
-	case IsNumeric(cur):
+		l.handleDoubleSingle('|', token{LOGOP, OR}, token{LOGOP, OR})
+	case isNumeric(cur):
 		err = l.handleNumeric()
-	case IsString(cur):
+	case isString(cur):
 		l.handleString()
-	case IsSpace(cur):
+	case isSpace(cur):
 	default:
 		return errors.New("unrecognized symbol: " + string(cur))
 	}
@@ -82,7 +82,7 @@ func (l *lexer) next() error {
 }
 
 // add adds the token to the result
-func (l *lexer) add(t Token) {
+func (l *lexer) add(t token) {
 	l.tok = append(l.tok, t)
 }
 
@@ -103,23 +103,23 @@ func (l *lexer) untilFalse(f func(rune) bool) []rune {
 
 // handleNumeric handles a situation where the next token is numeric
 func (l *lexer) handleNumeric() error {
-	str := l.untilFalse(IsNumeric)
+	str := l.untilFalse(isNumeric)
 	f, err := strconv.ParseFloat(string(str), 64)
 	if err != nil {
 		return err
 	}
-	l.add(Token{NUM, f})
+	l.add(token{NUM, f})
 	return nil
 }
 
 // handleString handles a situation where the next token is a func/var/bool
 func (l *lexer) handleString() {
-	str := l.untilFalse(IsString)
+	str := l.untilFalse(isString)
 	l.tok = append(l.tok, stringToken(str, l.ctx)...)
 }
 
 // handleSingleOrDouble handles a situation like the > symbol where the token could either be > or >=.
-func (l *lexer) handleDoubleSingle(next rune, double, single Token) {
+func (l *lexer) handleDoubleSingle(next rune, double, single token) {
 	if l.pos+1 < l.len {
 		if l.src[l.pos+1] == next {
 			l.add(double)
@@ -131,24 +131,24 @@ func (l *lexer) handleDoubleSingle(next rune, double, single Token) {
 }
 
 // stringToken makes tokens from the given string and context
-func stringToken(r []rune, ctx *Context) []Token {
+func stringToken(r []rune, ctx *Context) []token {
 	s := string(r)
 	// handle bool literals
 	if s == "true" {
-		return []Token{{BOOL, true}}
+		return []token{{BOOL, true}}
 	}
 	if s == "false" {
-		return []Token{{BOOL, false}}
+		return []token{{BOOL, false}}
 	}
 	// handle string that is exactly var or func
 	for n := range ctx.Vars {
 		if n == s {
-			return []Token{{VAR, n}}
+			return []token{{VAR, n}}
 		}
 	}
 	for n := range ctx.Funcs {
 		if n == s {
-			return []Token{{FUNC, n}}
+			return []token{{FUNC, n}}
 		}
 	}
 
@@ -157,12 +157,12 @@ func stringToken(r []rune, ctx *Context) []Token {
 	if ok {
 		return slice
 	}
-	return []Token{{VAR, s}}
+	return []token{{VAR, s}}
 }
 
-func stringTokenRecursive(r []rune, ctx *Context) ([]Token, bool) {
+func stringTokenRecursive(r []rune, ctx *Context) ([]token, bool) {
 	if len(r) == 0 {
-		return []Token{}, true
+		return []token{}, true
 	}
 	for v := range ctx.Vars {
 		for i := 0; i < len(r); i++ {
@@ -172,7 +172,7 @@ func stringTokenRecursive(r []rune, ctx *Context) ([]Token, bool) {
 				if !ok {
 					return nil, false
 				}
-				return append([]Token{{VAR, v}}, res...), true
+				return append([]token{{VAR, v}}, res...), true
 			}
 		}
 	}
@@ -184,7 +184,7 @@ func stringTokenRecursive(r []rune, ctx *Context) ([]Token, bool) {
 				if !ok {
 					return nil, false
 				}
-				return append([]Token{{FUNC, f}}, res...), true
+				return append([]token{{FUNC, f}}, res...), true
 			}
 		}
 	}
@@ -199,25 +199,25 @@ func (l *lexer) fixTokens() {
 		switch {
 		// ex: 9x or 7sin or xy or xsin
 		case (prev.Type == NUM || prev.Type == VAR) && (cur.Type == VAR || cur.Type == FUNC):
-			l.insert(Token{NUMOP, MUL}, i)
+			l.insert(token{NUMOP, MUL}, i)
 			i++
 		// )(
 		case (prev.Type == RIGHT) && (cur.Type == LEFT):
-			l.insert(Token{NUMOP, MUL}, i)
+			l.insert(token{NUMOP, MUL}, i)
 			i++
 		// ex: 3( or x(
 		case (prev.Type == NUM || prev.Type == VAR) && (cur.Type == LEFT):
-			l.insert(Token{NUMOP, MUL}, i)
+			l.insert(token{NUMOP, MUL}, i)
 			i++
 		// ex: )x or )5 or )sin
 		case (prev.Type == RIGHT) && (cur.Type == VAR || cur.Type == NUM || cur.Type == FUNC):
-			l.insert(Token{NUMOP, MUL}, i)
+			l.insert(token{NUMOP, MUL}, i)
 			i++
 		// ex: sin3 or sinx
 		// TODO: correctly handle things like sin3x
 		case (prev.Type == FUNC) && (cur.Type == NUM || cur.Type == VAR):
-			l.insert(Token{LEFT, nil}, i)
-			l.insert(Token{RIGHT, nil}, i+2)
+			l.insert(token{LEFT, nil}, i)
+			l.insert(token{RIGHT, nil}, i+2)
 			i++
 		}
 		prev = cur
@@ -225,7 +225,7 @@ func (l *lexer) fixTokens() {
 }
 
 // insert inserts the given token at the given index
-func (l *lexer) insert(t Token, i int) {
+func (l *lexer) insert(t token, i int) {
 	if len(l.tok) <= i {
 		l.tok = append(l.tok, t)
 		return

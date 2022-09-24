@@ -3,8 +3,8 @@ package eval
 // Expr is an expression that can be evaluated
 type Expr struct {
 	Expr   string
-	Tokens []Token
-	Stages *Stage
+	tokens []token
+	stages *stage
 }
 
 // NewExpr makes a new expression from the given expression string
@@ -17,25 +17,30 @@ func New(expr string) *Expr {
 	return NewExpr(expr)
 }
 
+// Set sets the expression of the expression
+func (ex *Expr) Set(expr string) {
+	ex.Expr = expr
+}
+
 // Compile compiles the expression with the given context
 func (ex *Expr) Compile(ctx *Context) error {
-	t, err := Tokens(ex.Expr, ctx)
+	t, err := tokens(ex.Expr, ctx)
 	if err != nil {
 		return err
 	}
-	ex.Tokens = t
-	s, err := Stages(ex.Tokens)
+	ex.tokens = t
+	s, err := stages(ex.tokens)
 	if err != nil {
 		return err
 	}
-	ex.Stages = s
+	ex.stages = s
 	return nil
 }
 
 // Eval evaluates the expression with the given context
 func (ex *Expr) Eval(ctx *Context) (any, error) {
-	if ex.Stages == nil {
+	if ex.stages == nil {
 		return nil, nil
 	}
-	return ex.Stages.Eval(ctx)
+	return ex.stages.eval(ctx)
 }
