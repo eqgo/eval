@@ -1,5 +1,7 @@
 package eval
 
+import "errors"
+
 type parser struct {
 	src []token
 	pos int
@@ -25,6 +27,9 @@ func newParser(src []token) *parser {
 
 // parse goes through tokens and sets stg to result
 func (p *parser) parse() error {
+	if len(p.src) == 0 {
+		return errors.New("parser: syntax error")
+	}
 	stg, err := parseAdd(p)
 	if err != nil {
 		return err
@@ -41,12 +46,18 @@ func makeOpParseFunc(tokens []token, next parseRule) parseRule {
 				cur := p.src[p.pos]
 				if cur == t {
 					pl := newParser(p.src[:p.pos])
-					pl.parse()
+					err := pl.parse()
+					if err != nil {
+						return nil, err
+					}
 					pr := newParser(p.src[p.pos+1:])
-					pr.parse()
+					err = pr.parse()
+					if err != nil {
+						return nil, err
+					}
 					return &stage{
-						Left:     pl.stg,
-						Right:    pr.stg,
+						left:     pl.stg,
+						right:    pr.stg,
 						evalFunc: tokenStageEvalMap[t],
 					}, nil
 				}
@@ -59,8 +70,7 @@ func makeOpParseFunc(tokens []token, next parseRule) parseRule {
 }
 
 func parseFunc(p *parser) (*stage, error) {
-	// fmt.Println(p.src)
-	if p.src[0].Type != FUNC {
+	if p.src[0].typ != FUNC {
 		return parseSep(p)
 	}
 	pr := newParser(p.src[p.pos+1:])
@@ -69,18 +79,18 @@ func parseFunc(p *parser) (*stage, error) {
 		return nil, err
 	}
 	return &stage{
-		Right:    pr.stg,
-		evalFunc: functionStage(p.src[0].Value.(string)),
+		right:    pr.stg,
+		evalFunc: funcStage(p.src[0].value.(string)),
 	}, nil
 }
 
 func parseVal(p *parser) (*stage, error) {
 	tok := p.src[0]
-	switch tok.Type {
+	switch tok.typ {
 	case NUM, BOOL:
 		return &stage{evalFunc: litStage(tok)}, nil
 	case VAR:
-		return &stage{evalFunc: varStage(tok.Value.(string))}, nil
+		return &stage{evalFunc: varStage(tok.value.(string))}, nil
 	case LEFT:
 		pr := newParser(p.src[p.pos+1:])
 		err := pr.parse()
@@ -88,9 +98,18 @@ func parseVal(p *parser) (*stage, error) {
 			return nil, err
 		}
 		return pr.stg, nil
-
 	case RIGHT:
 		return nil, nil
+	case NUMPRE:
+		pr := newParser(p.src[p.pos+1:])
+		err := pr.parse()
+		if err != nil {
+			return nil, err
+		}
+		return &stage{
+			right:    pr.stg,
+			evalFunc: negStage, // negate is currently only num prefix
+		}, nil
 	}
-	return nil, nil
+	return nil, errors.New("parser: unrecognized token")
 }

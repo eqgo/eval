@@ -19,6 +19,9 @@ func newLexer(src []rune, ctx *Context) *lexer {
 
 // lex goes through data and sets tok to result
 func (l *lexer) lex() error {
+	if len(l.src) == 0 {
+		return errors.New("lexer: expression string must not be empty")
+	}
 	for l.pos = 0; l.pos < l.len; l.pos++ {
 		err := l.next()
 		if err != nil {
@@ -192,36 +195,40 @@ func stringTokenRecursive(r []rune, ctx *Context) ([]token, bool) {
 }
 
 // fixTokens replaces things like NUM VAR with NUM MUL VAR
-func (l *lexer) fixTokens() {
+func (l *lexer) fixTokens() error {
+	if len(l.tok) == 0 {
+		return errors.New("lexer: syntax error")
+	}
 	prev := l.tok[0]
 	for i := 1; i < len(l.tok); i++ {
 		cur := l.tok[i]
 		switch {
 		// ex: 9x or 7sin or xy or xsin
-		case (prev.Type == NUM || prev.Type == VAR) && (cur.Type == VAR || cur.Type == FUNC):
+		case (prev.typ == NUM || prev.typ == VAR) && (cur.typ == VAR || cur.typ == FUNC):
 			l.insert(token{NUMOP, MUL}, i)
 			i++
 		// )(
-		case (prev.Type == RIGHT) && (cur.Type == LEFT):
+		case (prev.typ == RIGHT) && (cur.typ == LEFT):
 			l.insert(token{NUMOP, MUL}, i)
 			i++
 		// ex: 3( or x(
-		case (prev.Type == NUM || prev.Type == VAR) && (cur.Type == LEFT):
+		case (prev.typ == NUM || prev.typ == VAR) && (cur.typ == LEFT):
 			l.insert(token{NUMOP, MUL}, i)
 			i++
 		// ex: )x or )5 or )sin
-		case (prev.Type == RIGHT) && (cur.Type == VAR || cur.Type == NUM || cur.Type == FUNC):
+		case (prev.typ == RIGHT) && (cur.typ == VAR || cur.typ == NUM || cur.typ == FUNC):
 			l.insert(token{NUMOP, MUL}, i)
 			i++
 		// ex: sin3 or sinx
 		// TODO: correctly handle things like sin3x
-		case (prev.Type == FUNC) && (cur.Type == NUM || cur.Type == VAR):
+		case (prev.typ == FUNC) && (cur.typ == NUM || cur.typ == VAR):
 			l.insert(token{LEFT, nil}, i)
 			l.insert(token{RIGHT, nil}, i+2)
 			i++
 		}
 		prev = cur
 	}
+	return nil
 }
 
 // insert inserts the given token at the given index

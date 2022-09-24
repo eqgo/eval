@@ -22,12 +22,12 @@ var tokenStageEvalMap = map[token]stageEval{
 // litStage makes the stageEval for a stage that is a literal value from a token
 func litStage(t token) stageEval {
 	return func(left, right any, ctx *Context) (any, error) {
-		return t.Value, nil
+		return t.value, nil
 	}
 
 }
 
-// varStage makes the stageEval for a stage that it is a variable
+// varStage makes the stageEval for a stage that is a variable
 func varStage(name string) stageEval {
 	return func(left, right any, ctx *Context) (any, error) {
 		v, ok := ctx.Vars[name]
@@ -38,7 +38,8 @@ func varStage(name string) stageEval {
 	}
 }
 
-func functionStage(name string) stageEval {
+// funcStage makes the stageEval for a stage that is a function
+func funcStage(name string) stageEval {
 	return func(left, right any, ctx *Context) (any, error) {
 		f, ok := ctx.Funcs[name]
 		if !ok {
@@ -81,6 +82,11 @@ func modStage(left, right any, ctx *Context) (any, error) {
 // powStage is the stageEval for a stage that is an pow op
 func powStage(left, right any, ctx *Context) (any, error) {
 	return mat.Pow(left.(float64), right.(float64)), nil
+}
+
+// negStage is the stageEval for a stage that is a neg op
+func negStage(left, right any, ctx *Context) (any, error) {
+	return 0 - right.(float64), nil
 }
 
 // sepStage is the stageEval for a stage that is a sep op
