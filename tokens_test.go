@@ -8,9 +8,11 @@ import (
 func TestTokens(t *testing.T) {
 	ctx := NewContext()
 	ctx.Copy(MathContext)
-	ctx.Set("x", 0.0)
-	ex := New("1+3*4^2")
+	ctx.Set("x", 2.0)
+	expr := "xsinx"
+	ex := New(expr)
 	ex.Compile(ctx)
+	fmt.Println(ex.Tokens)
 	fmt.Println(ex.Eval(ctx))
 
 }

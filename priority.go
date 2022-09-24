@@ -9,6 +9,8 @@ const (
 	priorityAdd priority = iota
 	// * or /
 	priorityMul
+	// %
+	priorityMod
 	// ^
 	priorityPow
 	priorityLen

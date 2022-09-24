@@ -20,5 +20,6 @@ var MathFuncs = Funcs{
 // MathConsts are all of the standard math constants
 var MathConsts = Vars{
 	"pi": mat.Pi,
+	"π":  mat.Pi,
 	"e":  mat.E,
 }
