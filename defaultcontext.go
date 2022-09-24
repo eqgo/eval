@@ -1,8 +1,6 @@
 package eval
 
 import (
-	"math"
-
 	"github.com/eqgo/mat"
 )
 
@@ -37,9 +35,17 @@ var MathFuncs = Funcs{
 	"arccoth": NewFunc1(mat.Arccoth),
 	"ln":      NewFunc1(mat.Ln),
 	"log":     NewFunc2(mat.Log),
-	"abs":     NewFunc1(math.Abs),
-	"pow":     NewFunc2(math.Pow),
-	"mod":     NewFunc2(math.Mod),
+	"abs":     NewFunc1(mat.Abs),
+	"pow":     NewFunc2(mat.Pow),
+	"mod":     NewFunc2(mat.Mod),
+	"fact":    NewFunc1(mat.Fact),
+	"floor":   NewFunc1(mat.Floor),
+	"ceil":    NewFunc1(mat.Ceil),
+	"round":   NewFunc1(mat.Round),
+	"sqrt":    NewFunc1(mat.Sqrt),
+	"cbrt":    NewFunc1(mat.Cbrt),
+	"min":     NewFuncV(mat.Min),
+	"max":     NewFuncV(mat.Max),
 }
 
 // MathConsts are all of the standard math constants

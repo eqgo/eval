@@ -1,7 +1,5 @@
 package eval
 
-import "fmt"
-
 type parser struct {
 	src []Token
 	pos int
@@ -61,7 +59,7 @@ func makeOpParseFunc(tokens []Token, next parseRule) parseRule {
 }
 
 func parseFunc(p *parser) (*Stage, error) {
-	fmt.Println(p.src)
+	// fmt.Println(p.src)
 	if p.src[0].Type != FUNC {
 		return parseSep(p)
 	}

@@ -2,7 +2,8 @@ package eval
 
 import (
 	"fmt"
-	"math"
+
+	"github.com/eqgo/mat"
 )
 
 // stageEval represents a function that can be used as the eval function for a stage
@@ -74,12 +75,12 @@ func divStage(left, right any, ctx *Context) (any, error) {
 
 // modStage is the stageEval for a stage that is an mod op
 func modStage(left, right any, ctx *Context) (any, error) {
-	return math.Mod(left.(float64), right.(float64)), nil
+	return mat.Mod(left.(float64), right.(float64)), nil
 }
 
 // powStage is the stageEval for a stage that is an pow op
 func powStage(left, right any, ctx *Context) (any, error) {
-	return math.Pow(left.(float64), right.(float64)), nil
+	return mat.Pow(left.(float64), right.(float64)), nil
 }
 
 // sepStage is the stageEval for a stage that is a sep op
