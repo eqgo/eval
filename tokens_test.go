@@ -13,6 +13,6 @@ func TestTokens(t *testing.T) {
 	ex := New(expr)
 	err := ex.Compile(ctx)
 	fmt.Println(err)
-	fmt.Println(ex.tokens)
+	fmt.Println(ex.Tokens)
 	fmt.Println(ex.Eval(ctx))
 }

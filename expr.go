@@ -3,7 +3,7 @@ package eval
 // Expr is an expression that can be evaluated
 type Expr struct {
 	Expr   string
-	tokens []Token
+	Tokens []Token
 	stages *stage
 }
 
@@ -28,8 +28,8 @@ func (ex *Expr) Compile(ctx *Context) error {
 	if err != nil {
 		return err
 	}
-	ex.tokens = t
-	s, err := stages(ex.tokens)
+	ex.Tokens = t
+	s, err := stages(ex.Tokens)
 	if err != nil {
 		return err
 	}
