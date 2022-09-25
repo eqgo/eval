@@ -1,12 +1,13 @@
 package eval
 
-import "errors"
+import (
+	"errors"
+)
 
 type parser struct {
-	src []token
+	src []Token
 	pos int
 	len int
-	stg *stage
 }
 
 type parseRule func(p *parser) (*stage, error)
@@ -14,100 +15,123 @@ type parseRule func(p *parser) (*stage, error)
 var parseSep, parseAdd, parseMul, parseMod, parsePow parseRule
 
 func init() {
-	parsePow = makeOpParseFunc([]token{{NUMOP, POW}}, parseFunc)
-	parseMod = makeOpParseFunc([]token{{NUMOP, MOD}}, parsePow)
-	parseMul = makeOpParseFunc([]token{{NUMOP, MUL}, {NUMOP, DIV}}, parseMod)
-	parseAdd = makeOpParseFunc([]token{{NUMOP, ADD}, {NUMOP, SUB}}, parseMul)
-	parseSep = makeOpParseFunc([]token{{SEP, nil}}, parseVal)
+	parsePow = makeOpParseFunc([]Token{{NUMOP, POW}}, parseFunc, parseFunc)
+	parseMod = makeOpParseFunc([]Token{{NUMOP, MOD}}, parsePow, nil)
+	parseMul = makeOpParseFunc([]Token{{NUMOP, MUL}, {NUMOP, DIV}}, parseMod, nil)
+	parseAdd = makeOpParseFunc([]Token{{NUMOP, ADD}, {NUMOP, SUB}}, parseMul, nil)
+	parseSep = makeOpParseFunc([]Token{{SEP, nil}}, parseAdd, nil)
 }
 
-func newParser(src []token) *parser {
-	return &parser{src: src, pos: 0, len: len(src), stg: nil}
+func newParser(src []Token) *parser {
+	return &parser{src: src, pos: 0, len: len(src)}
 }
 
-// parse goes through tokens and sets stg to result
-func (p *parser) parse() error {
-	if len(p.src) == 0 {
-		return errors.New("parser: syntax error")
+func (p *parser) next() Token {
+	t := p.src[p.pos]
+	p.pos++
+	return t
+}
+
+func (p *parser) hasNext() bool {
+	return p.pos < p.len
+}
+
+func (p *parser) rewind() {
+	p.pos--
+}
+
+// parse goes through tokens and returns stg
+func (p *parser) parse() (*stage, error) {
+	if p.len == 0 {
+		return nil, errors.New("parser: syntax error")
 	}
-	stg, err := parseAdd(p)
+	stg, err := parseSep(p)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	p.stg = stg
-	return nil
+	return stg, nil
 }
 
 // makeOpParseFunc makes an a simple parse func for an operator situation
-func makeOpParseFunc(tokens []token, next parseRule) parseRule {
-	return func(p *parser) (*stage, error) {
-		for _, t := range tokens {
-			for p.pos = 0; p.pos < p.len; p.pos++ {
-				cur := p.src[p.pos]
-				if cur == t {
-					pl := newParser(p.src[:p.pos])
-					err := pl.parse()
-					if err != nil {
-						return nil, err
-					}
-					pr := newParser(p.src[p.pos+1:])
-					err = pr.parse()
-					if err != nil {
-						return nil, err
-					}
-					return &stage{
-						left:     pl.stg,
-						right:    pr.stg,
-						evalFunc: tokenStageEvalMap[t],
-					}, nil
+func makeOpParseFunc(tokens []Token, leftRule parseRule, rightRule parseRule) parseRule {
+	var f parseRule
+	f = func(p *parser) (*stage, error) {
+		leftStage, err := leftRule(p)
+		if err != nil {
+			return nil, err
+		}
+		for p.hasNext() {
+			cur := p.next()
+			found := false
+			for _, t := range tokens {
+				if t == cur {
+					found = true
+					break
 				}
 			}
-		}
-		p.pos = 0
-		return next(p)
-	}
+			if !found {
+				break
+			}
+			rightStage, err := rightRule(p)
+			if err != nil {
+				return nil, err
+			}
+			stg := &stage{
+				left:     leftStage,
+				right:    rightStage,
+				evalFunc: tokenStageEvalMap[cur],
+			}
+			return stg, nil
 
+		}
+		p.rewind()
+		return leftStage, nil
+	}
+	if rightRule == nil {
+		rightRule = f
+	}
+	return f
 }
 
 func parseFunc(p *parser) (*stage, error) {
-	if p.src[0].typ != FUNC {
-		return parseSep(p)
+	tok := p.next()
+	if tok.Type != FUNC {
+		p.rewind()
+		return parseVal(p)
 	}
-	pr := newParser(p.src[p.pos+1:])
-	err := pr.parse()
+	stg, err := parseVal(p)
 	if err != nil {
 		return nil, err
 	}
 	return &stage{
-		right:    pr.stg,
-		evalFunc: funcStage(p.src[0].value.(string)),
+		right:    stg,
+		evalFunc: funcStage(tok.Value.(string)),
 	}, nil
 }
 
 func parseVal(p *parser) (*stage, error) {
-	tok := p.src[0]
-	switch tok.typ {
+	tok := p.next()
+	switch tok.Type {
 	case NUM, BOOL:
 		return &stage{evalFunc: litStage(tok)}, nil
 	case VAR:
-		return &stage{evalFunc: varStage(tok.value.(string))}, nil
+		return &stage{evalFunc: varStage(tok.Value.(string))}, nil
 	case LEFT:
-		pr := newParser(p.src[p.pos+1:])
-		err := pr.parse()
+		stg, err := p.parse()
 		if err != nil {
 			return nil, err
 		}
-		return pr.stg, nil
+		p.next()
+		return stg, nil
 	case RIGHT:
 		return nil, nil
 	case NUMPRE:
-		pr := newParser(p.src[p.pos+1:])
-		err := pr.parse()
+		stg, err := p.parse()
 		if err != nil {
 			return nil, err
 		}
 		return &stage{
-			right:    pr.stg,
+			right:    stg,
 			evalFunc: negStage, // negate is currently only num prefix
 		}, nil
 	}

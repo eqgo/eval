@@ -9,7 +9,7 @@ import (
 // stageEval represents a function that can be used as the eval function for a stage
 type stageEval func(left, right any, ctx *Context) (any, error)
 
-var tokenStageEvalMap = map[token]stageEval{
+var tokenStageEvalMap = map[Token]stageEval{
 	{SEP, nil}:   sepStage,
 	{NUMOP, SUB}: subStage,
 	{NUMOP, ADD}: addStage,
@@ -20,9 +20,9 @@ var tokenStageEvalMap = map[token]stageEval{
 }
 
 // litStage makes the stageEval for a stage that is a literal value from a token
-func litStage(t token) stageEval {
+func litStage(t Token) stageEval {
 	return func(left, right any, ctx *Context) (any, error) {
-		return t.value, nil
+		return t.Value, nil
 	}
 
 }
@@ -86,7 +86,7 @@ func powStage(left, right any, ctx *Context) (any, error) {
 
 // negStage is the stageEval for a stage that is a neg op
 func negStage(left, right any, ctx *Context) (any, error) {
-	return 0 - right.(float64), nil
+	return -right.(float64), nil
 }
 
 // sepStage is the stageEval for a stage that is a sep op

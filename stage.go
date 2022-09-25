@@ -8,10 +8,10 @@ type stage struct {
 }
 
 // stages returns the stages for the given tokens
-func stages(t []token) (*stage, error) {
+func stages(t []Token) (*stage, error) {
 	p := newParser(t)
-	err := p.parse()
-	return p.stg, err
+	stg, err := p.parse()
+	return stg, err
 }
 
 // eval evaluates the stage

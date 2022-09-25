@@ -1,4 +1,4 @@
-github.com/eqgo/mat v0.0.0-beta.1 h1:ICCXbhAyScqQVp0G6l05VRKUEn7M/Qd9PFFMiWSKe9M=
-github.com/eqgo/mat v0.0.0-beta.1/go.mod h1:gh89OC1R6QPxo0/6dsQgABUlOhAhkiViW4bwfLes8Lc=
 github.com/eqgo/mat v0.0.0-beta.2 h1:q12t4n6GpLhn0VFnVuxbdLcW43+US8F0kkOuRxDoAgY=
 github.com/eqgo/mat v0.0.0-beta.2/go.mod h1:gh89OC1R6QPxo0/6dsQgABUlOhAhkiViW4bwfLes8Lc=
+golang.org/x/exp v0.0.0-20220921164117-439092de6870 h1:j8b6j9gzSigH28O5SjSpQSSh9lFd6f5D/q0aHjNTulc=
+golang.org/x/exp v0.0.0-20220921164117-439092de6870/go.mod h1:cyybsKvd6eL0RnXn6p/Grxp8F5bW7iYuBgsNCOHpMYE=

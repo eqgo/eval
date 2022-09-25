@@ -4,14 +4,14 @@ import (
 	"fmt"
 )
 
-// token is a token in an expression
-type token struct {
-	typ   tokenType
-	value any
+// Token is a Token in an expression
+type Token struct {
+	Type  TokenType
+	Value any
 }
 
-// tokens returns the tokens for the given expression string with the given context
-func tokens(expr string, ctx *Context) ([]token, error) {
+// Tokens returns the tokens for the given expression string with the given context
+func Tokens(expr string, ctx *Context) ([]Token, error) {
 	l := newLexer([]rune(expr), ctx)
 	err := l.lex()
 	if err != nil {
@@ -21,6 +21,6 @@ func tokens(expr string, ctx *Context) ([]token, error) {
 	return l.tok, err
 }
 
-func (t token) String() string {
-	return fmt.Sprintf("(%v: %v)", t.typ, t.value)
+func (t Token) String() string {
+	return fmt.Sprintf("(%v: %v)", t.Type, t.Value)
 }
