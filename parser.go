@@ -94,6 +94,9 @@ func makeOpParseFunc(tokens []Token, leftRule parseRule, rightRule parseRule) pa
 }
 
 func parseFunc(p *parser) (*stage, error) {
+	if !p.hasNext() {
+		return nil, errors.New("parser: syntax error")
+	}
 	tok := p.next()
 	if tok.Type != FUNC {
 		p.rewind()
@@ -110,6 +113,9 @@ func parseFunc(p *parser) (*stage, error) {
 }
 
 func parseVal(p *parser) (*stage, error) {
+	if !p.hasNext() {
+		return nil, errors.New("parser: syntax error")
+	}
 	tok := p.next()
 	switch tok.Type {
 	case NUM, BOOL:
