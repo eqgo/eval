@@ -142,8 +142,8 @@ func (l *lexer) fixTokens() error {
 	for i := 1; i < len(l.tok); i++ {
 		cur := l.tok[i]
 		switch {
-		// ex: 9x or 7sin or xy or xsin
-		case (prev.Type == NUM || prev.Type == VAR) && (cur.Type == VAR || cur.Type == FUNC):
+		// ex: 9x or 7sin or xy or xsin or x3
+		case (prev.Type == NUM || prev.Type == VAR) && (cur.Type == VAR || cur.Type == FUNC || cur.Type == NUM):
 			l.insert(Token{NUMOP, MUL}, i)
 			i++
 		// )(

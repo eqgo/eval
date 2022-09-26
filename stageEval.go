@@ -1,6 +1,7 @@
 package eval
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/eqgo/mat"
@@ -56,37 +57,51 @@ func funcStage(name string) stageEval {
 
 // addStage is the stageEval for a stage that is an add op
 func addStage(left, right any, ctx *Context) (any, error) {
-	return left.(float64) + right.(float64), nil
+	return numOpStage(func(left, right float64) float64 {
+		return left + right
+	}, left, right, ctx)
 }
 
 // subStage is the stageEval for a stage that is an sub op
 func subStage(left, right any, ctx *Context) (any, error) {
-	return left.(float64) - right.(float64), nil
+	return numOpStage(func(left, right float64) float64 {
+		return left - right
+	}, left, right, ctx)
 }
 
 // mulStage is the stageEval for a stage that is an mul op
 func mulStage(left, right any, ctx *Context) (any, error) {
-	return left.(float64) * right.(float64), nil
+	return numOpStage(func(left, right float64) float64 {
+		return left * right
+	}, left, right, ctx)
 }
 
 // divStage is the stageEval for a stage that is an div op
 func divStage(left, right any, ctx *Context) (any, error) {
-	return left.(float64) / right.(float64), nil
+	return numOpStage(func(left, right float64) float64 {
+		return left / right
+	}, left, right, ctx)
 }
 
 // modStage is the stageEval for a stage that is an mod op
 func modStage(left, right any, ctx *Context) (any, error) {
-	return mat.Mod(left.(float64), right.(float64)), nil
+	return numOpStage(func(left, right float64) float64 {
+		return mat.Mod(left, right)
+	}, left, right, ctx)
 }
 
 // powStage is the stageEval for a stage that is an pow op
 func powStage(left, right any, ctx *Context) (any, error) {
-	return mat.Pow(left.(float64), right.(float64)), nil
+	return numOpStage(func(left, right float64) float64 {
+		return mat.Pow(left, right)
+	}, left, right, ctx)
 }
 
 // negStage is the stageEval for a stage that is a neg op
 func negStage(left, right any, ctx *Context) (any, error) {
-	return -right.(float64), nil
+	return numOpStage(func(left, right float64) float64 {
+		return -right
+	}, 0.0, right, ctx)
 }
 
 // sepStage is the stageEval for a stage that is a sep op
@@ -105,4 +120,17 @@ func sepStage(left, right any, ctx *Context) (any, error) {
 		res = append(res, right)
 	}
 	return res, nil
+}
+
+// numOpStage is a template for stageEvals for num ops
+func numOpStage(f func(left float64, right float64) float64, left, right any, ctx *Context) (any, error) {
+	l, ok := left.(float64)
+	if !ok {
+		return nil, errors.New("evaluation error: must use float64 values with numerical operators")
+	}
+	r, ok := right.(float64)
+	if !ok {
+		return nil, errors.New("evaluation error: must use float64 values with numerical operators")
+	}
+	return f(l, r), nil
 }
