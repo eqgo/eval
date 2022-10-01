@@ -12,14 +12,20 @@ type parser struct {
 
 type parseRule func(p *parser) (*stage, error)
 
-var parseSep, parseAdd, parseMul, parseMod, parsePow parseRule
+var parseSep, parseOr, parseAnd, parseComp, parseAdd, parseMul, parseMod, parsePow, parsePre parseRule
 
 func init() {
-	parsePow = makeOpParseFunc([]Token{{NUMOP, POW}}, parseFunc, parseFunc)
+	parsePre = makeOpParseFunc([]Token{{NUMPRE, NEG}, {LOGPRE, NOT}}, nil, parseFunc)
+	parsePow = makeOpParseFunc([]Token{{NUMOP, POW}}, parseFunc, nil)
 	parseMod = makeOpParseFunc([]Token{{NUMOP, MOD}}, parsePow, nil)
 	parseMul = makeOpParseFunc([]Token{{NUMOP, MUL}, {NUMOP, DIV}}, parseMod, nil)
 	parseAdd = makeOpParseFunc([]Token{{NUMOP, ADD}, {NUMOP, SUB}}, parseMul, nil)
-	parseSep = makeOpParseFunc([]Token{{SEP, nil}}, parseAdd, nil)
+	parseComp = makeOpParseFunc([]Token{
+		{COMP, EQUAL}, {COMP, NOTEQUAL}, {COMP, GREATER}, {COMP, LESS}, {COMP, GEQ}, {COMP, LEQ},
+	}, parseAdd, nil)
+	parseAnd = makeOpParseFunc([]Token{{LOGOP, AND}}, parseComp, nil)
+	parseOr = makeOpParseFunc([]Token{{LOGOP, OR}}, parseAnd, nil)
+	parseSep = makeOpParseFunc([]Token{{SEP, nil}}, parseOr, nil)
 }
 
 func newParser(src []Token) *parser {
@@ -56,9 +62,13 @@ func (p *parser) parse() (*stage, error) {
 func makeOpParseFunc(tokens []Token, leftRule parseRule, rightRule parseRule) parseRule {
 	var f parseRule
 	f = func(p *parser) (*stage, error) {
-		leftStage, err := leftRule(p)
-		if err != nil {
-			return nil, err
+		var leftStage *stage
+		if leftRule != nil {
+			var err error
+			leftStage, err = leftRule(p)
+			if err != nil {
+				return nil, err
+			}
 		}
 		for p.hasNext() {
 			cur := p.next()
@@ -132,14 +142,11 @@ func parseVal(p *parser) (*stage, error) {
 	case RIGHT:
 		return nil, nil
 	case NUMPRE:
-		stg, err := p.parse()
-		if err != nil {
-			return nil, err
-		}
-		return &stage{
-			right:    stg,
-			evalFunc: negStage, // negate is currently only num prefix
-		}, nil
+		p.rewind()
+		return parsePre(p)
+	case LOGPRE:
+		p.rewind()
+		return parsePre(p)
 	}
 	return nil, errors.New("parser: unrecognized token")
 }

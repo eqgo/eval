@@ -12,7 +12,7 @@ func TestEval(t *testing.T) {
 	ctx.Set("a", 3.0)
 	ctx.Set("t", 4.0)
 	ctx.Set("y", 5.0)
-	ex := New("-true")
+	ex := New("!(x^4>at)|(x>1)")
 	err := ex.Compile(ctx)
 	if err != nil {
 		t.Error(err)
