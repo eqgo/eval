@@ -11,6 +11,13 @@ func NewFuncs() Funcs {
 	return make(Funcs)
 }
 
+// NewFuncsFrom makes a new set of functions by copying the other functions
+func NewFuncsFrom(from Funcs) Funcs {
+	funcs := NewFuncs()
+	funcs.Copy(from)
+	return funcs
+}
+
 // Set sets the value of the given name to the given value.
 func (f Funcs) Set(name string, value Func) {
 	f[name] = value

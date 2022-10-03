@@ -12,6 +12,13 @@ func NewVars() Vars {
 	return make(Vars)
 }
 
+// NewVarsFrom makes a new set of variables by copying the other variables
+func NewVarsFrom(from Vars) Vars {
+	vars := NewVars()
+	vars.Copy(from)
+	return vars
+}
+
 // Set sets the value of the given name to the given value.
 func (v Vars) Set(name string, value Var) {
 	v[name] = value

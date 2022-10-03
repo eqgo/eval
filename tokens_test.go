@@ -6,8 +6,7 @@ import (
 )
 
 func TestTokens(t *testing.T) {
-	ctx := NewContext()
-	ctx.Copy(MathContext)
+	ctx := NewContextFrom(DefaultContext())
 	ctx.Set("x", 2.0)
 	ctx.Set("a", 3.0)
 	ctx.Set("t", 4.0)

@@ -63,6 +63,10 @@ func (l *lexer) next() error {
 		l.add(Token{COMP, EQUAL})
 	case cur == ',':
 		l.add(Token{SEP, nil})
+	case cur == '≤':
+		l.add(Token{COMP, LEQ})
+	case cur == '≥':
+		l.add(Token{COMP, GEQ})
 	case cur == '!':
 		l.handleDoubleSingle('=', Token{COMP, NOTEQUAL}, Token{LOGPRE, NOT})
 	case cur == '>':

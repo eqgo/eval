@@ -11,6 +11,13 @@ func NewContext() *Context {
 	return &Context{Vars: NewVars(), Funcs: NewFuncs()}
 }
 
+// NewContextFrom makes a new context by copying the other context
+func NewContextFrom(from *Context) *Context {
+	ctx := NewContext()
+	ctx.Copy(from)
+	return ctx
+}
+
 // Set calls c.Funcs.Set if value is type Func, otherwise it calls c.Vars.Set
 func (c *Context) Set(name string, value any) {
 	switch value := value.(type) {
