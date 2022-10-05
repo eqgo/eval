@@ -30,12 +30,11 @@ func TestTokens(t *testing.T) {
 				{VAR, "t"}, {SEP, nil}, {VAR, "y"}, {NUMOP, MUL}, {NUM, 6.82}, {NUMOP, MUL}, {VAR, "t"}, {NUMOP, MUL}, {VAR, "x"},
 				{RIGHT, nil}}},
 	}
-	for i, test := range tests {
+	for _, test := range tests {
 		res, err := Tokens(test.expr, ctx)
 		if fmt.Sprint(res) != fmt.Sprint(test.want) {
 			t.Errorf("Tokens(%v) \nShould be: \n%v \nNot: \n%v with error: %v", test.expr, test.want, res, err)
-		} else {
-			fmt.Printf("Tokens test %d passed with error: %v \n", i, err)
 		}
 	}
+	fmt.Printf("%d tokens tests passed \n", len(tests))
 }

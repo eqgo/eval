@@ -34,23 +34,42 @@ func (l *lexer) lex() error {
 // next gets the next token from the data
 func (l *lexer) next() error {
 	cur := l.src[l.pos]
-	var err error
 	switch {
 	case isLeft(cur):
 		l.add(Token{LEFT, nil})
 	case isRight(cur):
 		l.add(Token{RIGHT, nil})
 	case cur == '+':
-		if l.pos == 0 || isLeft(l.src[l.pos-1]) {
+		// if it is the first token it is a positive prefix, which can be ignored
+		if len(l.tok) == 0 {
 			break
 		}
-		l.add(Token{NUMOP, ADD})
+		prev := l.tok[len(l.tok)-1]
+		// if the previous token is a num, var, or right bracket, this is a plus symbol; otherwise it is a positive prefix which can be ignored
+		if prev.Type == NUM || prev.Type == VAR || prev.Type == RIGHT {
+			l.add(Token{NUMOP, ADD})
+		}
+		// it should not be a bool
+		if prev.Type == BOOL {
+			return errors.New("lexer: must use float64 values with the + symbol")
+		}
 	case cur == '-':
-		if l.pos == 0 || isLeft(l.src[l.pos-1]) {
+		// if it is the first token it is a negative prefix
+		if len(l.tok) == 0 {
 			l.add(Token{NUMPRE, NEG})
 			break
 		}
-		l.add(Token{NUMOP, SUB})
+		prev := l.tok[len(l.tok)-1]
+		// if the previous token is a num, var, or right bracket, this is a minus symbol; otherwise it is a negative prefix
+		if prev.Type == NUM || prev.Type == VAR || prev.Type == RIGHT {
+			l.add(Token{NUMOP, SUB})
+			break
+		}
+		// it should not be a bool
+		if prev.Type == BOOL {
+			return errors.New("lexer: must use float64 values with the - symbol")
+		}
+		l.add(Token{NUMPRE, NEG})
 	case cur == '*':
 		l.add(Token{NUMOP, MUL})
 	case cur == '/':
@@ -60,7 +79,7 @@ func (l *lexer) next() error {
 	case cur == '%':
 		l.add(Token{NUMOP, MOD})
 	case cur == '=':
-		l.add(Token{COMP, EQUAL})
+		l.handleDoubleSingle('=', Token{COMP, EQUAL}, Token{COMP, EQUAL})
 	case cur == ',':
 		l.add(Token{SEP, nil})
 	case cur == '≤':
@@ -78,14 +97,17 @@ func (l *lexer) next() error {
 	case cur == '|':
 		l.handleDoubleSingle('|', Token{LOGOP, OR}, Token{LOGOP, OR})
 	case isNumeric(cur):
-		err = l.handleNumeric()
+		err := l.handleNumeric()
+		if err != nil {
+			return err
+		}
 	case isString(cur):
 		l.handleString()
 	case isSpace(cur):
 	default:
 		return errors.New("unrecognized symbol: " + string(cur))
 	}
-	return err
+	return nil
 }
 
 // add adds the token to the result
