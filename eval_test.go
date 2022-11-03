@@ -6,7 +6,7 @@ import (
 )
 
 func TestEval(t *testing.T) {
-	ctx := NewContextFrom(DefaultContext())
+	ctx := DefaultContext()
 	ctx.Set("x", 2.0)
 	ctx.Set("a", 3.0)
 	ctx.Set("c", 4.0)
@@ -34,12 +34,14 @@ func TestEval(t *testing.T) {
 		{expr: "-((4%2.5)^2)", want: -(9.0 / 4.0)},
 		{expr: "1+2*3.5", want: 8.0},
 		{expr: "2.0(3+4)", want: 14.0},
-		{expr: "3/4.0/2", want: 1.5},
+		{expr: "3/4.0/2", want: 0.375},
 		{expr: "8*9.2*4*3.1", want: 912.64},
 		{expr: "1000*1000*1000*1000/100", want: 10000000000.0},
 		{expr: "2^20", want: 1048576.0},
 		{expr: "3^-6", want: 1.0 / 729.0},
 		{expr: "+3%(125^(1/3))", want: 3.0},
+		{expr: "2/3*4", want: 8.0 / 3.0},
+		{expr: "1-2+3", want: 2.0},
 		// bools and logical operators without variables
 		{expr: "true", want: true},
 		{expr: "false", want: false},
@@ -79,12 +81,12 @@ func TestEval(t *testing.T) {
 		{expr: "a%x", want: 1.0},
 		{expr: "bey", want: -487.1985},
 		{expr: "yx^2", want: 20.0},
-		{expr: "2c%y", want: 8.0},
+		{expr: "2c%y", want: 3.0},
 		{expr: "bexactime", want: -14031.3168},
-		{expr: "pixe/y", want: 3.415893689069426},
+		{expr: "pixe/y", want: 3.4158936890694265},
 		{expr: "3timetimetime", want: 648.0},
-		{expr: "4.5000x-acy/8.2", want: 1.6829268292682915},
-		{expr: "3xpiepiepiepie/timetimetime", want: 147.73211574629636},
+		{expr: "4.5000x-acy/8.2", want: 1.6829268292682924},
+		{expr: "3xpiepiepiepie/timetimetime", want: 191460.82200720004},
 	}
 	for _, test := range tests {
 		expr := New(test.expr)

@@ -89,6 +89,7 @@ func makeOpParseFunc(tokens []Token, leftRule parseRule, rightRule parseRule) pa
 			stg := &stage{
 				left:     leftStage,
 				right:    rightStage,
+				tok:      cur,
 				evalFunc: tokenStageEvalMap[cur],
 			}
 			return stg, nil
@@ -118,6 +119,7 @@ func parseFunc(p *parser) (*stage, error) {
 	}
 	return &stage{
 		right:    stg,
+		tok:      tok,
 		evalFunc: funcStage(tok.Value.(string)),
 	}, nil
 }
@@ -129,9 +131,9 @@ func parseVal(p *parser) (*stage, error) {
 	tok := p.next()
 	switch tok.Type {
 	case NUM, BOOL:
-		return &stage{evalFunc: litStage(tok)}, nil
+		return &stage{tok: tok, evalFunc: litStage(tok)}, nil
 	case VAR:
-		return &stage{evalFunc: varStage(tok.Value.(string))}, nil
+		return &stage{tok: tok, evalFunc: varStage(tok.Value.(string))}, nil
 	case LEFT:
 		stg, err := p.parse()
 		if err != nil {

@@ -41,8 +41,9 @@ func MathFuncs() Funcs {
 		"arccoth": NewFunc1(mat.Arccoth),
 		"ln":      NewFunc1(mat.Ln),
 		"log":     NewFunc2(mat.Log),
-		"abs":     NewFunc1(mat.Abs),
+		"abs":     NewFunc1(mat.Abs[float64]),
 		"pow":     NewFunc2(mat.Pow),
+		"exp":     NewFunc1(mat.Exp),
 		"mod":     NewFunc2(mat.Mod),
 		"fact":    NewFunc1(mat.Fact),
 		"floor":   NewFunc1(mat.Floor),
@@ -50,8 +51,9 @@ func MathFuncs() Funcs {
 		"round":   NewFunc1(mat.Round),
 		"sqrt":    NewFunc1(mat.Sqrt),
 		"cbrt":    NewFunc1(mat.Cbrt),
-		"min":     NewFuncV(mat.Min),
-		"max":     NewFuncV(mat.Max),
+		"min":     NewFuncV(mat.Min[float64]),
+		"max":     NewFuncV(mat.Max[float64]),
+		"avg":     NewFuncV(mat.Avg[float64]),
 	}
 }
 
@@ -75,7 +77,7 @@ func LogicalContext() *Context {
 // LogicalFuncs returns a set of basic logical functions
 func LogicalFuncs() Funcs {
 	return Funcs{
-		"if": NewFunc3(func(condition bool, val1, val2 float64) float64 {
+		"if": NewFunc3(func(condition bool, val1, val2 any) any {
 			if condition {
 				return val1
 			}
@@ -84,7 +86,7 @@ func LogicalFuncs() Funcs {
 	}
 }
 
-// DefaultContext returns a context with standard math constans, standard math functions, and basic logic functions
+// DefaultContext returns a context with standard math constants, standard math functions, and basic logic functions
 func DefaultContext() *Context {
 	return &Context{
 		Vars:  DefaultVars(),
