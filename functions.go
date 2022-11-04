@@ -23,24 +23,26 @@ func (f Funcs) Set(name string, value Func) {
 	f[name] = value
 }
 
-// Delete removes the variable with the given name.
+// Delete removes the function with the given name.
 func (f Funcs) Delete(name string) {
 	delete(f, name)
 }
 
-// Reset resets the variables to an empty map.
+// Reset resets the functions to an empty map.
 func (f Funcs) Reset() {
-	f = make(Funcs)
+	for k := range f {
+		delete(f, k)
+	}
 }
 
-// Copy copies the given variables to v. It does not remove the existing variables in v, but it will override any variables with the same name as copied variables.
+// Copy copies the given functions to v. It does not remove the existing functions in v, but it will override any functions with the same name as copied functions.
 func (f Funcs) Copy(other Funcs) {
 	for k, d := range other {
 		f[k] = d
 	}
 }
 
-// SetTo sets the variables to the other given variables.
+// SetTo sets the functions to the other given functions.
 func (f Funcs) SetTo(other Funcs) {
 	f.Reset()
 	f.Copy(other)

@@ -31,7 +31,9 @@ func (v Vars) Delete(name string) {
 
 // Reset resets the variables to an empty map.
 func (v Vars) Reset() {
-	v = make(Vars)
+	for k := range v {
+		delete(v, k)
+	}
 }
 
 // Copy copies the given variables to v. It does not remove the existing variables in v, but it will override any variables with the same name as copied variables.

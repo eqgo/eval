@@ -1,12 +1,8 @@
 github.com/eqgo/cart v0.0.1 h1:5YxHSUb/dbqiXAzKCSVeF4B/IZa7v/CrCe5vShdgg8s=
 github.com/eqgo/cart v0.0.1/go.mod h1:Rcc+0jgSYxshrTzq9iOlgvamvprv0og/D249LAodXnE=
-github.com/eqgo/mat v0.0.0-beta.2 h1:q12t4n6GpLhn0VFnVuxbdLcW43+US8F0kkOuRxDoAgY=
-github.com/eqgo/mat v0.0.0-beta.2/go.mod h1:gh89OC1R6QPxo0/6dsQgABUlOhAhkiViW4bwfLes8Lc=
 github.com/eqgo/mat v0.0.0-beta.4 h1:FFi6WEvSxuKoXid3iFldyQlcWBX7o87VNKpMj22qwok=
 github.com/eqgo/mat v0.0.0-beta.4/go.mod h1:FhXRcx0MmGcPgZNHjvQ8wU59BGbariKU+i43e4NXZ9A=
 github.com/eqgo/types v0.0.0 h1:+b4syK2uRHhmB/GYbuF+I297YdfsHGP3iDv9Pi5CsbM=
 github.com/eqgo/types v0.0.0/go.mod h1:DOfWw+Prrtsz+3vnH9v+1Wj4pnJwQpScrI1Fp2+I/3A=
-golang.org/x/exp v0.0.0-20220921164117-439092de6870 h1:j8b6j9gzSigH28O5SjSpQSSh9lFd6f5D/q0aHjNTulc=
-golang.org/x/exp v0.0.0-20220921164117-439092de6870/go.mod h1:cyybsKvd6eL0RnXn6p/Grxp8F5bW7iYuBgsNCOHpMYE=
 golang.org/x/exp v0.0.0-20221031165847-c99f073a8326 h1:QfTh0HpN6hlw6D3vu8DAwC8pBIwikq0AI1evdm+FksE=
 golang.org/x/exp v0.0.0-20221031165847-c99f073a8326/go.mod h1:CxIveKay+FTh1D0yPZemJVgC/95VzuuOLq5Qi4xnoYc=
