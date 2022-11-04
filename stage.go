@@ -12,8 +12,11 @@ type stage struct {
 func stages(t []Token) (*stage, error) {
 	p := newParser(t)
 	stg, err := p.parse()
+	if err != nil {
+		return nil, err
+	}
 	stg.fixSamePrec()
-	return stg, err
+	return stg, nil
 }
 
 // fixSamePrec fixes stages of equal precedence that were parsed in reverse
