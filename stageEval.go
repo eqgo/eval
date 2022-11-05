@@ -201,3 +201,8 @@ func compStage(f func(left float64, right float64) bool, left, right any, ctx *C
 	}
 	return f(l, r), nil
 }
+
+// blankStage is a stage eval that does nothing and just returns the left stage
+func blankStage(left, right any, ctx *Context) (any, error) {
+	return left, nil
+}

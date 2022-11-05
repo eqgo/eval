@@ -1,4 +1,3 @@
-// Package eval provides mathematical expression evaluation.
 package eval
 
 // A Var is a variable that can be used in expressions. Variables can be of any type and hold any value.

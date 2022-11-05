@@ -1,3 +1,4 @@
+// Package eval provides mathematical expression evaluation.
 package eval
 
 // Expr is an expression that can be evaluated

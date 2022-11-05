@@ -55,7 +55,11 @@ func (p *parser) parse() (*stage, error) {
 	if err != nil {
 		return nil, err
 	}
-	return stg, nil
+	// panics on empty parentheses without this
+	return &stage{
+		left:     stg,
+		evalFunc: blankStage,
+	}, nil
 }
 
 // makeOpParseFunc makes an a simple parse func for an operator situation

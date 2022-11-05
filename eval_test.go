@@ -42,6 +42,7 @@ func TestEval(t *testing.T) {
 		{expr: "+3%(125^(1/3))", want: 3.0},
 		{expr: "2/3*4", want: 8.0 / 3.0},
 		{expr: "1-2+3", want: 2.0},
+		{expr: "()", want: nil},
 		// bools and logical operators without variables
 		{expr: "true", want: true},
 		{expr: "false", want: false},
